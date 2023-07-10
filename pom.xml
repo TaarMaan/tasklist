@@ -15,6 +15,10 @@
     <description>tasklist</description>
     <properties>
         <java.version>17</java.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+        <jakarta-validation.version>3.0.2</jakarta-validation.version>
+        <postgresql-driver.version>42.5.1</postgresql-driver.version>
     </properties>
     <dependencies>
         <dependency>
@@ -33,13 +37,38 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <scope>${postgresql-driver.version}</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate-validator.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta-validation.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
