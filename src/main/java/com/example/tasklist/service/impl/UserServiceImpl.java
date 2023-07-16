@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User update(User user) {
-        user.setPass(passwordEncoder.encode(user.getPass()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.update(user);
         return user;
     }
@@ -44,10 +44,10 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalStateException("User already exists.");
         }
-        if(!user.getPass().equals(user.getPassConfirm())){
+        if(!user.getPassword().equals(user.getPassConfirm())){
             throw new IllegalStateException("Password and password confirmation do no match.");
         }
-        user.setPass(passwordEncoder.encode(user.getPass()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.create(user);
         Set<Role> roles = Set.of(Role.ROLE_USER);
         userRepository.insertUserRole(user.getId(),Role.ROLE_USER);

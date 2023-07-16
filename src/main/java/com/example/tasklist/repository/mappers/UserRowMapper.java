@@ -25,7 +25,7 @@ public class UserRowMapper {
             user.setId(resultSet.getLong("user_id"));
             user.setName(resultSet.getString("user_name"));
             user.setUsername(resultSet.getString("user_username"));
-            user.setPass(resultSet.getString("user_password"));
+            user.setPassword(resultSet.getString("user_password"));
             user.setRoles(roles);
             user.setTasks(tasks);
             return user;

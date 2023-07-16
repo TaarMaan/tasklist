@@ -12,7 +12,7 @@ public class User {
     private Long id;
     private String name;
     private String username;
-    private String pass;
+    private String password;
     private String passConfirm;
     private Set<Role> roles;
     private List<Task> tasks;

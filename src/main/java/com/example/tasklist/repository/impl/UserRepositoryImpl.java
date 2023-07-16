@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-@Repository
+//@Repository
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
     private final DataSourceConfig dataSourceConfig;
@@ -62,7 +62,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     private final String CREATE = """
             INSERT INTO users (name, username,password)
-            VALUES (?, ?,?)
+            VALUES (?, ?, ?)
             """;
 
     private final String INSERT_USER_ROLE = """
@@ -121,7 +121,7 @@ public class UserRepositoryImpl implements UserRepository {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE);
             preparedStatement.setString(1,user.getName());
             preparedStatement.setString(2,user.getUsername());
-            preparedStatement.setString(3,user.getPass());
+            preparedStatement.setString(3,user.getPassword());
             preparedStatement.setLong(4,user.getId());
         }catch (SQLException throwables){
             throw new ResourceMappingException("Exception while updating user.");
@@ -135,7 +135,7 @@ public class UserRepositoryImpl implements UserRepository {
             PreparedStatement preparedStatement = connection.prepareStatement(CREATE,PreparedStatement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1,user.getName());
             preparedStatement.setString(2,user.getUsername());
-            preparedStatement.setString(3,user.getPass());
+            preparedStatement.setString(3,user.getPassword());
             preparedStatement.executeUpdate();
             try (ResultSet rs = preparedStatement.getGeneratedKeys()){
                 rs.next();

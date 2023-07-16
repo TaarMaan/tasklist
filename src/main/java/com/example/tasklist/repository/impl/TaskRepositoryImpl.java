@@ -12,7 +12,7 @@ import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+//@Repository
 @RequiredArgsConstructor
 public class TaskRepositoryImpl implements TaskRepository {
     private final DataSourceConfig dataSourceConfig;
@@ -29,7 +29,7 @@ public class TaskRepositoryImpl implements TaskRepository {
             SELECT t.id              as task_id,
                    t.title           as task_title,
                    t.description     as task_description,
-                   t.expiration_date as task_expiration_datee,
+                   t.expiration_date as task_expiration_date,
                    t.status          as task_status
             FROM tasks t
                     JOIN users_tasks ut on t.id = ut.task_id

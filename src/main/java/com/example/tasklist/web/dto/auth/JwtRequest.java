@@ -8,5 +8,5 @@ public class JwtRequest {
     @NotNull(message = "Username must be not null.")
     private String username;
     @NotNull(message = "Password must be not null.")
-    private String pass;
+    private String password;
 }
