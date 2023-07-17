@@ -38,7 +38,7 @@ public class ControllerAdvice {
     @ExceptionHandler({AccessDeniedException.class, org.springframework.security.access.AccessDeniedException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ExceptionBody handleAccessDenied() {
-        return new ExceptionBody("Access. Denied.");
+        return new ExceptionBody("Access Denied.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
