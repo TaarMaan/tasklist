@@ -26,12 +26,14 @@ public class ControllerAdvice {
     @ExceptionHandler(ResourceMappingException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionBody handleResourceMapping(ResourceMappingException e) {
+        e.printStackTrace();
         return new ExceptionBody(e.getMessage());
     }
 
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionBody handleIllegalState(IllegalStateException e) {
+        e.printStackTrace();
         return new ExceptionBody(e.getMessage());
     }
 
@@ -44,6 +46,7 @@ public class ControllerAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionBody handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        e.printStackTrace();
         ExceptionBody exceptionBody = new ExceptionBody("Validation failed.");
         List<FieldError> errors = e.getBindingResult().getFieldErrors();
         exceptionBody.setErrors(errors.stream()
@@ -54,6 +57,7 @@ public class ControllerAdvice {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionBody handleMethodArgumentNotValid(ConstraintViolationException e) {
+        e.printStackTrace();
         ExceptionBody exceptionBody = new ExceptionBody("Validation failed.");
         exceptionBody.setErrors(e.getConstraintViolations().stream()
                 .collect(Collectors.toMap(
@@ -66,6 +70,7 @@ public class ControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionBody handleException(Exception e){
+        e.printStackTrace();
         return new ExceptionBody("Iternal error.");
     }
 }
