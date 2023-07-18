@@ -2,13 +2,14 @@ package com.example.tasklist.config;
 
 import com.example.tasklist.web.security.JwtTokenFilter;
 import com.example.tasklist.web.security.JwtTokenProvider;
+import com.example.tasklist.service.props.MinioProperties;
+import io.minio.MinioClient;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -30,6 +31,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
 public class ApplicationConfig {
     private final JwtTokenProvider tokenProvider;
+    private final MinioProperties minioProperties;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,15 +39,26 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            final AuthenticationConfiguration configuration)
+            throws Exception {
         return configuration.getAuthenticationManager();
     }
 
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(minioProperties.getUrl())
+                .credentials(minioProperties.getAccessKey(),
+                        minioProperties.getSecretKey())
+                .build();
+    }
 
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList("bearerAuth"))
                 .components(
                         new Components()
                                 .addSecuritySchemes("bearerAuth",
@@ -61,7 +74,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain filterChain(final HttpSecurity httpSecurity)
+            throws Exception {
         httpSecurity
                 .csrf().disable()
                 .cors()
@@ -71,11 +85,13 @@ public class ApplicationConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .exceptionHandling()
-                .authenticationEntryPoint((request, response, authException) -> {
+                .authenticationEntryPoint((request, response,
+                                           authException) -> {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.getWriter().write("Unauthorized");
                 })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                .accessDeniedHandler((request, response,
+                                      accessDeniedException) -> {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                     response.getWriter().write("Unauthorized");
                 })
@@ -87,7 +103,8 @@ public class ApplicationConfig {
                 .anyRequest().authenticated()
                 .and()
                 .anonymous().disable()
-                .addFilterBefore(new JwtTokenFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtTokenFilter(tokenProvider),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }

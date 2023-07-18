@@ -1,9 +1,10 @@
 package com.example.tasklist.service;
 
 import com.example.tasklist.domain.task.Task;
-import org.springframework.stereotype.Service;
+import com.example.tasklist.domain.task.TaskImage;
 
 import java.util.List;
+
 public interface TaskService {
     Task getById(Long id);
 
@@ -11,7 +12,9 @@ public interface TaskService {
 
     Task update(Task task);
 
-    Task create(Task task,Long id);
+    Task create(Task task, Long id);
 
     void delete(Long id);
+
+    void uploadImage(Long id, TaskImage image);
 }
