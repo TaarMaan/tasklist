@@ -76,6 +76,7 @@ public class ApplicationConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity httpSecurity)
+    // Rework to 3.1.2
             throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
