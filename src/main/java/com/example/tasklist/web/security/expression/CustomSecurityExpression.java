@@ -44,7 +44,7 @@ public class CustomSecurityExpression {
         JwtEntity user = (JwtEntity) authentication.getPrincipal();
         Long id = user.getId();
 
-        return userService.isTakOwner(id, taskId);
+        return userService.isTaskOwner(id, taskId);
     }
 
 }

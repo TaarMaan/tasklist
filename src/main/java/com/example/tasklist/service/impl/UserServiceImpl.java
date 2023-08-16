@@ -1,9 +1,11 @@
 package com.example.tasklist.service.impl;
 
+import com.example.tasklist.domain.MailType;
 import com.example.tasklist.domain.exception.ResourceNotFoundException;
 import com.example.tasklist.domain.user.Role;
 import com.example.tasklist.domain.user.User;
 import com.example.tasklist.repository.UserRepository;
+import com.example.tasklist.service.MailService;
 import com.example.tasklist.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Properties;
 import java.util.Set;
 
 @Service
@@ -22,24 +25,24 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final MailService mailService;
+
     @Override
-    //@Transactional(readOnly = true)
-    @Cacheable(value = "UserService::getById",
-            key = "#id")
+    @Transactional(readOnly = true)
+    @Cacheable(value = "UserService::getById", key = "#id")
     public User getById(final Long id) {
-        return userRepository.findById(id).
-                orElseThrow(() ->
+        return userRepository.findById(id)
+                .orElseThrow(() ->
                         new ResourceNotFoundException("User not found."));
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "UserService::getByUsername",
-            key = "#username")
+    @Cacheable(value = "UserService::getByUsername", key = "#username")
     public User getByUsername(final String username) {
-        return userRepository.findByUsername(username).
-                orElseThrow(() ->
-                        new ResourceNotFoundException("Username not found."));
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found."));
     }
 
     @Override
@@ -51,8 +54,7 @@ public class UserServiceImpl implements UserService {
                     key = "#user.username")
     })
     public User update(final User user) {
-        user.setPassword(passwordEncoder.
-                encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return user;
     }
@@ -61,8 +63,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Caching(cacheable = {
             @Cacheable(value = "UserService::getById",
+                    condition = "#user.id!=null",
                     key = "#user.id"),
             @Cacheable(value = "UserService::getByUsername",
+                    condition = "#user.username!=null",
                     key = "#user.username")
     })
     public User create(final User user) {
@@ -71,24 +75,33 @@ public class UserServiceImpl implements UserService {
         }
         if (!user.getPassword().equals(user.getPassConfirm())) {
             throw new IllegalStateException(
-                    "Password and password confirmation do no match.");
+                    "Password and password confirmation do not match."
+            );
         }
-        user.setPassword(passwordEncoder.
-                encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         Set<Role> roles = Set.of(Role.ROLE_USER);
         user.setRoles(roles);
         userRepository.save(user);
+        mailService.sendEmail(user, MailType.REGISTRATION, new Properties());
         return user;
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "UserService::isTaskOwner",
-            key = "#user.id + '.' + #taskId")
-    public boolean isTakOwner(final Long userId,
-                              final Long taskId) {
-        return userRepository.
-                isTaskOwner(userId, taskId);
+            key = "#userId + '.' + #taskId")
+    public boolean isTaskOwner(final Long userId, final Long taskId) {
+        return userRepository.isTaskOwner(userId, taskId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "UserService::getTaskAuthor",
+            key = "#taskId")
+    public User getTaskAuthor(final Long taskId) {
+        return userRepository.findTaskAuthor(taskId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found."));
     }
 
     @Override
