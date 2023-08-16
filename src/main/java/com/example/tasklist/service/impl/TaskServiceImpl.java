@@ -4,11 +4,9 @@ import com.example.tasklist.domain.exception.ResourceNotFoundException;
 import com.example.tasklist.domain.task.Status;
 import com.example.tasklist.domain.task.Task;
 import com.example.tasklist.domain.task.TaskImage;
-import com.example.tasklist.domain.user.User;
 import com.example.tasklist.repository.TaskRepository;
 import com.example.tasklist.service.ImageService;
 import com.example.tasklist.service.TaskService;
-import com.example.tasklist.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -16,6 +14,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,16 +24,14 @@ import java.util.List;
 public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
 
-    private final UserService userService;
     private final ImageService imageService;
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "TaskService::getById",
-            key = "#id")
+    @Cacheable(value = "TaskService::getById", key = "#id")
     public Task getById(final Long id) {
-        return taskRepository.findById(id).
-                orElseThrow(() ->
+        return taskRepository.findById(id)
+                .orElseThrow(() ->
                         new ResourceNotFoundException("Task not found."));
     }
 
@@ -43,9 +42,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Task> getAllSoonTasks(final Duration duration) {
+        LocalDateTime now = LocalDateTime.now();
+        return taskRepository.findAllSoonTasks(Timestamp.valueOf(now),
+                Timestamp.valueOf(now.plus(duration)));
+    }
+
+    @Override
     @Transactional
-    @CachePut(value = "TaskService::getById",
-            key = "#task.id")
+    @CachePut(value = "TaskService::getById", key = "#task.id")
     public Task update(final Task task) {
         if (task.getStatus() == null) {
             task.setStatus(Status.TODO);
@@ -57,34 +63,27 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     @Cacheable(value = "TaskService::getById",
+            condition = "#task.id!=null",
             key = "#task.id")
-    public Task create(final Task task,
-                       final Long userId) {
-        User user = userService.getById(userId);
+    public Task create(final Task task, final Long userId) {
         task.setStatus(Status.TODO);
         taskRepository.save(task);
-        user.getTasks().add(task);
-        userService.update(user);
+        taskRepository.assignTask(userId, task.getId());
         return task;
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "TaskService::getById",
-            key = "#id")
+    @CacheEvict(value = "TaskService::getById", key = "#id")
     public void delete(final Long id) {
         taskRepository.deleteById(id);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "TaskService::getById",
-            key = "#id")
-    public void uploadImage(final Long id,
-                            final TaskImage image) {
-        Task task = getById(id);
+    @CacheEvict(value = "TaskService::getById", key = "#id")
+    public void uploadImage(final Long id, final TaskImage image) {
         String fileName = imageService.upload(image);
-        task.getImages().add(fileName);
-        taskRepository.save(task);
+        taskRepository.addImage(id, fileName);
     }
 }
